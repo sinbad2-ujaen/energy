@@ -1,0 +1,155 @@
+openapi: 3.0.3
+info:
+  title: NODE API
+  description: API for Node operations like retrieving DAG structure, creating wallets, selecting transaction tips, and posting new transactions.
+  version: 1.0.0
+
+paths:
+  /node/dag:
+    get:
+      summary: Retrieve the DAG structure
+      description: Returns the DAG containing all transactions.
+      responses:
+        '200':
+          description: A JSON representation of the DAG.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DAG'
+        '500':
+          description: Server error
+
+  /node/newWallet/{seed}:
+    post:
+      summary: Create a new wallet
+      description: Generates a new wallet based on the provided seed.
+      parameters:
+        - name: seed
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Seed value used to generate the wallet
+      responses:
+        '200':
+          description: A JSON representation of the created wallet seed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  seed:
+                    type: string
+                    description: The wallet seed that was generated
+        '400':
+          description: Invalid input
+        '500':
+          description: Server error
+
+  /node/selectionTips:
+    get:
+      summary: Retrieve selection tips
+      description: Returns a list of selected transaction tips.
+      responses:
+        '200':
+          description: A JSON array of selected transaction tips.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transactions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Transaction'
+        '500':
+          description: Server error
+
+  /node/transaction:
+    post:
+      summary: Post a new transaction
+      description: Creates a new transaction with selection tips.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewTransactionNodeRequest'
+      responses:
+        '200':
+          description: A JSON representation of the created transaction.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transaction:
+                    $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Invalid input
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    DAG:
+      type: object
+      description: A map of transaction IDs to Transaction objects.
+      additionalProperties:
+        $ref: '#/components/schemas/Transaction'
+
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the transaction
+        timestampCreated:
+          type: string
+          format: date-time
+          description: Time when the transaction was created
+        timestampAdded:
+          type: string
+          format: date-time
+          description: Time when the transaction was added to the DAG
+        timestampConfirmed:
+          type: string
+          format: date-time
+          description: Time when the transaction was confirmed
+        token:
+          type: number
+          format: float
+          description: Token amount involved in the transaction
+        data:
+          type: string
+          description: Arbitrary data associated with the transaction
+        from:
+          type: string
+          description: Origin address of the transaction
+        to:
+          type: string
+          description: Destination address of the transaction
+        nonce:
+          type: integer
+          format: int64
+          description: Nonce value for the transaction
+        fee:
+          type: number
+          format: float
+          description: Fee amount for processing the transaction
+        status:
+          type: string
+          description: Status of the transaction
+        type:
+          type: string
+          description: Type of the transaction
+
+    NewTransactionNodeRequest:
+      type: object
+      properties:
+        transaction:
+          $ref: '#/components/schemas/Transaction'
+        selectionTips:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'

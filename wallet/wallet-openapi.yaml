@@ -1,0 +1,140 @@
+openapi: 3.0.3
+info:
+  title: Wallet API
+  description: API for Wallet operations like retrieving a random node, creating a new wallet, and submitting a transaction.
+  version: 1.0.0
+
+paths:
+  /wallet/getNode:
+    get:
+      summary: Get a random node URL
+      description: Returns a URL of a randomly selected node.
+      responses:
+        '200':
+          description: A JSON object containing the node URL.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  node:
+                    type: string
+                    format: uri
+                    description: The URL of the randomly selected node
+        '500':
+          description: Server error
+
+  /wallet:
+    post:
+      summary: Create a new wallet
+      description: Initializes a new wallet and returns the seed.
+      responses:
+        '200':
+          description: A JSON object containing the wallet seed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  seed:
+                    type: string
+                    description: The seed of the newly created wallet
+        '500':
+          description: Server error
+
+  /wallet/transaction:
+    post:
+      summary: Submit a new transaction
+      description: Creates a new transaction with the specified details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewTransactionWalletRequest'
+      responses:
+        '200':
+          description: A JSON object containing the created transaction.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transaction:
+                    $ref: '#/components/schemas/Transaction'
+        '400':
+          description: Invalid input
+        '500':
+          description: Server error
+
+components:
+  schemas:
+    NewTransactionWalletRequest:
+      type: object
+      properties:
+        from:
+          type: string
+          description: The address of the sender
+        to:
+          type: string
+          description: The address of the recipient
+        token:
+          type: number
+          format: float
+          description: The amount of tokens to transfer
+        data:
+          type: string
+          description: Additional data associated with the transaction
+        type:
+          type: string
+          description: The type of the transaction
+      required:
+        - from
+        - to
+        - token
+        - type
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the transaction
+        timestampCreated:
+          type: string
+          format: date-time
+          description: Time when the transaction was created
+        timestampAdded:
+          type: string
+          format: date-time
+          description: Time when the transaction was added to the DAG
+        timestampConfirmed:
+          type: string
+          format: date-time
+          description: Time when the transaction was confirmed
+        token:
+          type: number
+          format: float
+          description: Token amount involved in the transaction
+        data:
+          type: string
+          description: Arbitrary data associated with the transaction
+        from:
+          type: string
+          description: Origin address of the transaction
+        to:
+          type: string
+          description: Destination address of the transaction
+        nonce:
+          type: integer
+          format: int64
+          description: Nonce value for the transaction
+        fee:
+          type: number
+          format: float
+          description: Fee amount for processing the transaction
+        status:
+          type: string
+          description: Status of the transaction
+        type:
+          type: string
+          description: Type of the transaction
